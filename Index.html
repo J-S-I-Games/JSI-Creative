@@ -1,0 +1,1466 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J-S-I Creative</title>
+<style>
+  body {
+    margin: 0;
+    padding-top: 160px;
+    font-family: Arial, sans-serif;
+    background-color: #111;
+    color: white;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Línea de neón horizontal (arriba y abajo) */
+  .neon-line-horizontal {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: white;
+    box-shadow: 0 0 10px white, 0 0 20px white, 0 0 30px white;
+    z-index: 0;
+    animation: moveHorizontal 25s linear infinite;
+  }
+
+  .neon-top { top: 0; }
+  .neon-bottom { bottom: 0; }
+
+
+
+
+/* Línea de neón vertical que cruza de izquierda a derecha y se teletransporta */
+.neon-line-vertical {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 2px;           /* finita */
+  background: white;
+  box-shadow: 0 0 5px white, 0 0 10px white;
+  z-index: 0;
+  animation: moveVertical 25s linear infinite;
+}
+
+@keyframes moveVertical {
+  0% { left: -2px; }
+  99% { left: 100%; }
+}
+
+
+
+
+  /* Barra superior */
+  .top-bar {
+    background-color: #222;
+    width: 100%;
+    padding: 10px 0;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+  }
+
+  .dropdown-btn {
+    background-color: #333;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 10px 20px;
+  }
+
+  .dropdown-btn:hover { background-color: #555; }
+
+  /* Dropdown Contacto */
+ /* Dropdown Contacto animado */
+.dropdown-content {
+  display: none;
+  position: absolute; 
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px); /* empieza ligeramente arriba */
+  background-color: #555;
+  padding: 10px;
+  white-space: nowrap;
+  z-index: 1001;
+  flex-direction: column;
+  border-radius: 0px;
+
+  /* Animación */
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+
+
+  .dropdown-content a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+    padding: 5px 10px;
+    background-color: #666;
+  }
+
+  .dropdown-content a:hover { background-color: #777; }
+
+  .dropdown-content.show { display: block; }
+
+
+  .second-bar img { height: 60px; width: auto; }
+
+  /* Tercera barra */
+  .sub-bar {
+    background-color: #2a2a2a;
+    width: 100%;
+    height: 60px;
+    position: fixed;
+    top: 130px;
+    left: 0;
+    z-index: 998;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 30px;
+  }
+
+  /* Dropdown personalizado */
+  .sub-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 999;
+  }
+
+  .dropdown-display {
+    padding: 8px 15px;
+    background-color: #555;
+    color: white;
+    cursor: pointer;
+    border: none;
+    min-width: 120px;
+    text-align: left;
+    transition: background-color 0.2s;
+  }
+
+  .dropdown-display:hover { background-color: #666; }
+
+  .dropdown-items {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #555;
+  margin-top: 2px;
+  min-width: 150px;
+  z-index: 1000;
+  flex-direction: column;
+
+  /* Animación */
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none; /* para que no interfiera cuando está oculto */
+}
+
+.dropdown-items.show {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+
+  
+  .dropdown-items button:hover { background-color: #777; }
+
+
+
+.card-inner {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 10px;
+  width: 140px;
+  text-align: center;
+  box-shadow: 0 0 8px rgba(0,0,0,0.7);
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out;
+  cursor: pointer;
+}
+.card-inner img, .card-inner h3 {
+  pointer-events: none;
+  user-select: none;
+  max-width: 100%;
+  border-radius: 0px;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.card-outer.spin360 .card-inner {
+  animation: spin360Scale 1s forwards;
+}
+
+.card-outer {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+.card-outer:focus {
+  outline: none; /* quita el borde azul de foco */
+}
+
+
+
+
+
+
+
+
+@keyframes spin360Scale {
+  0% { transform: rotateY(0deg) scale(1); }
+  50% { transform: rotateY(180deg) scale(1.1); }
+  100% { transform: rotateY(360deg) scale(1); }
+}
+  
+ .model-panel {
+  display: none;
+  position: fixed;
+  top: 130px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 130px);
+  background-color: rgba(0,0,0,0.95);
+  color: white;
+  z-index: 2000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: flex-start;
+  margin: 80px 20px 40px 20px; /* ↑ ↑ ↑ ↑ */
+  /* top | right | bottom | left */
+}
+
+
+
+.dropdown-items button {
+  position: relative; 
+  background-color: #666;
+  color: white;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin: 2px 5px;
+  overflow: hidden;
+}
+
+.dropdown-items button::after {
+  content: "";
+  position: absolute;
+  bottom: 0;  
+  left: 0;
+  width: 0;          
+  height: 2px;   
+  background: white;    
+  transition: width 0.3s ease;
+}
+
+.dropdown-items button:hover::after {
+  width: 100%;
+}
+
+.dropdown-items button:hover {
+  background-color: #777;
+}
+
+
+.second-bar img {
+  height: 60px;
+  width: auto;
+}
+
+.register-btn {
+  position: relative;
+  background: #444; 
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 10px 20px;
+  overflow: hidden;
+  margin-right: 40px; 
+  border-radius: 0; 
+}
+
+/* Línea efecto */
+.register-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+/* Hover */
+.register-btn:hover::after {
+  width: 100%;
+}
+
+.panel-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 0px;
+  background: linear-gradient(135deg, #555, #333);
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  transition: all 0.2s ease;
+}
+
+.panel-btn:hover {
+  background: linear-gradient(135deg, #777, #555);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+}
+
+.tag {
+  display: inline-block;
+  background-color: #666;
+  color: white;
+  padding: 5px 10px;
+  margin: 3px;
+  border-radius: 0px;
+  font-size: 14px;
+}
+.tag:hover {
+  background-color: #777;
+}
+
+.close-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 0px;
+  overflow: hidden;
+  transition: background-color 0.2s;
+}
+
+.close-panel::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+.close-panel:hover {
+  background-color: #555;
+}
+
+.close-panel:hover::after {
+  width: 100%;
+}
+
+
+.panel-content .action-btn {
+  background-color: #444;      /* gris oscuro */
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  margin: 5px 10px 10px 0;
+  cursor: pointer;
+  border-radius: 0px;
+  font-size: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.2s;
+}
+
+.panel-content .action-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+.panel-content .action-btn:hover {
+  background-color: #555;
+}
+
+.panel-content .action-btn:hover::after {
+  width: 100%;
+}
+
+
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 3000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.register-panel {
+  background: #444; /* gris medio */
+  padding: 25px;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 90%;
+  color: white;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.7);
+}
+
+.register-panel .close-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.reg-input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 0px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: #333;
+  color: white;
+}
+
+.create-btn {
+  width: 100%;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 0px;
+  background: linear-gradient(135deg, #000, #333);
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.create-btn::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+.create-btn:hover {
+  background: linear-gradient(135deg, #222, #555);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.6);
+}
+
+.create-btn:hover::after {
+  width: 100%;
+}
+.register-note {
+  font-size: 13px;
+  color: #ccc;
+  margin-bottom: 15px;
+}
+
+
+.btn-style {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 0px;
+  background: linear-gradient(135deg, #000, #333);
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Línea blanca animada */
+.btn-style::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+.btn-style:hover {
+  background: linear-gradient(135deg, #222, #555);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.6);
+}
+
+.btn-style:hover::after {
+  width: 100%;
+}
+
+.dropdown-display.btn-style {
+  position: static;
+  overflow: visible;
+  width: 200px;
+  text-align: left;
+}
+
+
+.dropdown-items button:hover {
+  background: #555;
+}
+
+
+
+
+
+/* Botón de contacto */
+.dropdown-content a.btn-style {
+  display: block;  
+  margin: 5px 0;
+  text-align: left;
+  padding: 8px 15px;
+  background-color: #444;
+  color: white;
+  text-decoration: none;
+}
+
+.dropdown-content a.btn-style:hover {
+  background-color: #666;
+}
+
+.dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Contacto */
+.dropdown-content {
+  display: none;
+  position: absolute; 
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #555;
+  padding: 10px;
+  white-space: nowrap;
+  z-index: 1001;
+  flex-direction: column;
+  border-radius: 0px;
+}
+.dropdown-content.show {
+  display: flex;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0); /* posición final */
+  pointer-events: auto;
+}
+
+
+
+
+.search-box {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 0px;
+  font-size: 14px;
+  width: 250px;
+  background-color: #222;
+  color: white;
+  outline: none;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.search-box::placeholder {
+  color: #aaa;
+}
+
+.search-box:focus {
+  background-color: #333;
+  box-shadow: 0 0 5px white;
+}
+
+
+.search-input {
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: none;
+  background-color: #888; /* gris */
+  color: white;
+  width: 200px;
+}
+
+.search-input::placeholder {
+  color: #eee; /* placeholder más claro */
+}
+.second-bar {
+  background-color: #333;
+  width: 100%;
+  height: 80px;
+  position: fixed;
+  top: 50px;
+  left: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* separa izquierda y derecha */
+  padding: 0 30px;
+  gap: 20px;
+}
+
+.left-items {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* espacio entre logo y buscador */
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#searchInput {
+  padding: 8px 12px;
+  border-radius: 0px;
+  border: none;
+  background-color: #555; /* gris */
+  color: white;
+  font-size: 14px;
+  width: 200px;
+}
+
+
+
+
+
+
+
+/* Galería estilo carrusel (mismo estilo que FN FAL) */
+.gallery-container {
+  position: relative;
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  overflow: hidden;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-slide {
+  display: flex;
+  transition: transform 0.3s ease;
+  gap: 15px;
+}
+
+.gallery-slide img {
+  max-width: 100%;
+  height: auto;
+  border: 2px solid #888;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.gallery-prev,
+.gallery-next {
+  position: absolute;
+  background-color: rgba(0,0,0,0.6);
+  border: none;
+  color: white;
+  font-size: 24px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.gallery-prev:hover,
+.gallery-next:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.gallery-prev { left: 10px; top: 50%; transform: translateY(-50%); }
+.gallery-next { right: 10px; top: 50%; transform: translateY(-50%); }
+
+
+
+</style>
+</head>
+<body>
+
+<div class="neon-line-vertical"></div>
+
+
+<div class="top-bar">
+  <div class="dropdown-wrapper">
+    <button class="dropdown-btn btn-style" onclick="toggleDropdown()">Contacto</button>
+    <div id="myDropdown" class="dropdown-content">
+      <a href="https://www.tiktok.com" target="_blank" class="btn-style">TikTok</a>
+      <a href="https://www.facebook.com" target="_blank" class="btn-style">Facebook</a>
+      <a href="https://www.youtube.com" target="_blank" class="btn-style">YouTube</a>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="second-bar">
+  <!-- Contenedor de logo + buscador -->
+  <div class="left-items">
+    <img src="Logo.png" alt="Logo">
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Buscar modelos...">
+      <button id="searchBtn" class="btn-style">Buscar</button>
+    </div>
+  </div>
+
+  <!-- Botón a la derecha -->
+  <button class="register-btn btn-style">Registrarse</button>
+</div>
+
+
+<div class="sub-bar">
+  <!-- Tipo de modelos -->
+  <div class="sub-dropdown">
+    <button class="dropdown-display btn-style" onclick="toggleSubDropdown('tipoItems')">Tipo de modelos</button>
+    <div class="dropdown-items" id="tipoItems">
+      <button class="btn-style" onclick="selectItem('tipo','Todos')">Todos</button>
+      <button class="btn-style" onclick="selectItem('tipo','Low Poly')">Low Poly</button>
+      <button class="btn-style" onclick="selectItem('tipo','High Poly')">High Poly</button>
+      <button class="btn-style" onclick="selectItem('tipo','Escenarios')">Escenarios</button>
+    </div>
+    <span class="selected-text" id="tipoText">Todos</span>
+  </div>
+
+  <!-- Categoría -->
+  <div class="sub-dropdown">
+    <button class="dropdown-display btn-style" onclick="toggleSubDropdown('catItems')">Categoría</button>
+    <div class="dropdown-items" id="catItems">
+      <button class="btn-style" onclick="selectItem('categoria','Todos')">Todos</button>
+      <button class="btn-style" onclick="selectItem('categoria','Militar')">Militar</button>
+      <button class="btn-style" onclick="selectItem('categoria','Autos')">Autos</button>
+      <button class="btn-style" onclick="selectItem('categoria','Naturaleza')">Naturaleza</button>
+      <button class="btn-style" onclick="selectItem('categoria','Armas')">Armas</button>
+      <button class="btn-style" onclick="selectItem('categoria','Casa')">Casa</button>
+      <button class="btn-style" onclick="selectItem('categoria','Edificios')">Edificios</button>
+      <button class="btn-style" onclick="selectItem('categoria','Comidas')">Comidas</button>
+    </div>
+    <span class="selected-text" id="categoriaText">Todos</span>
+  </div>
+
+  <!-- Precio -->
+  <div class="sub-dropdown">
+    <button class="dropdown-display btn-style" onclick="toggleSubDropdown('precioItems')">Precio</button>
+    <div class="dropdown-items" id="precioItems">
+      <button class="btn-style" onclick="selectItem('precio','Todos')">Todos</button>
+      <button class="btn-style" onclick="selectItem('precio','Gratis')">Gratis</button>
+      <button class="btn-style" onclick="selectItem('precio','De pago')">De pago</button>
+    </div>
+    <span class="selected-text" id="precioText">Todos</span>
+  </div>
+</div>
+
+
+  
+  <!-- Contenedor de tarjetas -->
+<div class="cards-container">
+  <button class="card-outer" data-model="fnfal" data-tags="Todos,Militar,Armas,De pago,Low Poly">
+    <div class="card-inner">
+      <img src="FNFalImage.png" alt="FN FAL Low Poly">
+      <h3>FN FAL</h3>
+    </div>
+  </button>
+
+  <button class="card-outer" data-model="mauser1909" data-tags="Todos,Militar,Armas,De pago,Low Poly">
+    <div class="card-inner">
+      <img src="ArmaMauserModelo1909Mauser.png" alt="Mauser 1909 Low Poly">
+      <h3>Mauser 1909</h3>
+    </div>
+  </button>
+  
+  <button class="card-outer" data-model="mac-10" data-tags="Todos,Militar,Armas,Gratis,Low Poly">
+    <div class="card-inner">
+      <img src="IconoMac10.png" alt="Mac-10 Low Poly">
+      <h3>Mac - 10</h3>
+    </div>
+  </button>
+  
+    <!-- Podés agregar más tarjetas aquí -->
+</div>
+</div>
+
+
+
+
+
+
+<!-- Panel emergente FN FAL -->
+<div class="model-panel" data-model="fnfal" style="overflow-y:auto;">
+  <button class="close-panel">Volver</button>
+  <div class="panel-content" style="text-align:center; padding:20px; box-sizing:border-box;">
+
+    <img src="FNFalImage.png" alt="FN FAL" style="max-width:200px; margin-bottom:15px; border-radius:5px;">
+    
+    <h2 style="margin-bottom:15px;">FN FAL</h2>
+    
+    <div style="margin-bottom:15px; display:flex; justify-content:center; gap:10px;">
+      <div class="panel-buttons">
+        <button class="action-btn btn-style" onclick="window.open('https://sketchfab.com/3d-models/fn-fal-83-9cbcfe7c99ed4542b8e1012fe621a2f7', '_blank')">Ver</button>
+        <button class="action-btn btn-style" onclick="window.open('https://www.cgtrader.com/3d-models/military/gun/fn-fal-83-low-poly', '_blank')">Comprar a $2</button>
+      </div>
+    </div>
+    
+	<!-- Sección de calificación dentro del panel FN FAL -->
+<div style="margin-bottom:15px;">
+  <span style="font-weight:bold; margin-right:10px;">Califica este modelo :</span>
+  <span class="star" data-value="1" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="2" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="3" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="4" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="5" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <button class="action-btn btn-style" style="margin-left:10px;">Calificar</button>
+</div>
+	
+	
+    <div style="margin-bottom:15px;">
+      <span style="font-weight:bold; margin-right:5px;">Tags:</span>
+      <span class="tag">Todos</span>
+      <span class="tag">Militar</span>
+      <span class="tag">Armas</span>
+      <span class="tag">De pago</span>
+      <span class="tag">Low Poly</span>
+    </div>
+    
+    <div>
+      <span style="font-weight:bold;">Archivos:</span> Fbx, Blend, Obj
+    </div>
+
+    <!-- Título de la galería -->
+<h3 style="text-align:center; margin-top:20px; margin-bottom:15px; color:white;">Imágenes</h3>
+
+<!-- Contenedor de la galería con carrusel -->
+<div class="gallery-container">
+  <button class="gallery-prev">‹</button>
+  <div class="gallery-slide">
+    <img src="ImageFnFal1.png" alt="FN FAL 1">
+    <img src="ImageFnFal2.png" alt="FN FAL 2">
+    <img src="ImageFnFal3.png" alt="FN FAL 3">
+    <img src="ImageFnFal4.png" alt="FN FAL 4">
+  </div>
+  <button class="gallery-next">›</button>
+</div>
+
+
+<!-- Sección de Modelos Recomendados -->
+<h3 style="text-align:center; margin-top:30px; margin-bottom:15px; color:white;">Modelos Recomendados</h3>
+
+<div id="recommendedModels-fnfal" style="display:flex; justify-content:center; gap:20px; overflow-x:auto; padding:10px 0; white-space: nowrap;">
+  <!-- Tarjetas recomendadas se generarán con JS -->
+</div>
+</div>
+</div>
+
+
+
+<!-- Panel emergente Mauser 1909 -->
+<div class="model-panel" data-model="mauser1909" style="overflow-y:auto;">
+  <button class="close-panel">Volver</button>
+  <div class="panel-content" style="text-align:center; padding:20px; box-sizing:border-box;">
+    
+    <img src="ArmaMauserModelo1909Mauser.png" alt="Mauser 1909" style="max-width:200px; margin-bottom:15px; border-radius:5px;">
+    
+    <h2 style="margin-bottom:15px;">Mauser 1909</h2>
+    
+    <div style="margin-bottom:15px; display:flex; justify-content:center; gap:10px;">
+      <div class="panel-buttons">
+        <button class="action-btn btn-style" onclick="window.open('https://sketchfab.com/3d-models/mauser-modelo-1909-342561d9c8c64de09298f4c2592947c7', '_blank')">Ver</button>
+        <button class="action-btn btn-style" onclick="window.open('https://www.cgtrader.com/3d-models/military/gun/mauser-modelo-1909-low-poly', '_blank')">Comprar a $2</button>
+      </div>
+    </div>
+	
+	
+	
+    <!-- Sección de calificación -->
+    <div style="margin-bottom:15px;">
+      <span style="font-weight:bold; margin-right:10px;">Califica este modelo :</span>
+      <span class="star" data-value="1" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+      <span class="star" data-value="2" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+      <span class="star" data-value="3" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+      <span class="star" data-value="4" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+      <span class="star" data-value="5" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+      <button class="action-btn btn-style" style="margin-left:10px;">Calificar</button>
+    </div>
+    
+    <!-- Tags -->
+    <div style="margin-bottom:15px;">
+      <span style="font-weight:bold; margin-right:5px;">Tags:</span>
+      <span class="tag">Todos</span>
+      <span class="tag">Militar</span>
+      <span class="tag">Armas</span>
+      <span class="tag">De pago</span>
+      <span class="tag">Low Poly</span>
+    </div>
+    
+    <div>
+      <span style="font-weight:bold;">Archivos:</span> Fbx, Blend, Obj
+    </div>
+    
+	<!-- Título de la galería -->
+<h3 style="text-align:center; margin-top:20px; margin-bottom:15px; color:white;">Imágenes</h3>
+
+<!-- Contenedor de la galería con carrusel -->
+<div class="gallery-container">
+  <button class="gallery-prev">‹</button>
+  <div class="gallery-slide">
+    <img src="ImageMauser19091.png" alt="Mauser 19091">
+    <img src="ImageMauser19092.png" alt="Mauser 19092">
+    <img src="ImageMauser19093.png" alt="Mauser 19093">
+    <img src="ImageMauser19094.png" alt="Mauser 19094">
+  </div>
+  <button class="gallery-next">›</button>
+</div>
+
+	
+	
+    <!-- Sección de Modelos Recomendados -->
+    <h3 style="text-align:center; margin-top:30px; margin-bottom:15px; color:white;">Modelos Recomendados</h3>
+    
+    <div id="recommendedModels-mauser1909" style="display:flex; justify-content:center; gap:20px; overflow-x:auto; padding:10px 0; white-space: nowrap;">
+      <!-- Aquí se generan las tarjetas recomendadas con JS -->
+    </div>
+    
+  </div>
+</div>
+
+
+
+<!-- Panel emergente FN FAL -->
+<div class="model-panel" data-model="mac-10" style="overflow-y:auto;">
+  <button class="close-panel">Volver</button>
+  <div class="panel-content" style="text-align:center; padding:20px; box-sizing:border-box;">
+
+    <img src="IconoMac10.png" alt="Mac 10" style="max-width:200px; margin-bottom:15px; border-radius:5px;">
+    
+    <h2 style="margin-bottom:15px;">Mac - 10</h2>
+    
+    <div style="margin-bottom:15px; display:flex; justify-content:center; gap:10px;">
+      <div class="panel-buttons">
+        <button class="action-btn btn-style" onclick="window.open('https://sketchfab.com/3d-models/mac-10-low-poly-3f059f38df12436bb484bacb468a54a0', '_blank')">Ver</button>
+        <button class="action-btn btn-style" onclick="window.open('https://www.cgtrader.com/free-3d-models/military/gun/mac-10-low-poly-4905e7ac-9ccf-485c-8575-cf61379d46e1', '_blank')">Gratis</button>
+      </div>
+    </div>
+    
+	<!-- Sección de calificación dentro del panel mac 10-->
+<div style="margin-bottom:15px;">
+  <span style="font-weight:bold; margin-right:10px;">Califica este modelo :</span>
+  <span class="star" data-value="1" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="2" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="3" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="4" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="5" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <button class="action-btn btn-style" style="margin-left:10px;">Calificar</button>
+</div>
+	
+	
+    <div style="margin-bottom:15px;">
+      <span style="font-weight:bold; margin-right:5px;">Tags:</span>
+      <span class="tag">Todos</span>
+      <span class="tag">Militar</span>
+      <span class="tag">Armas</span>
+      <span class="tag">Gratis</span>
+      <span class="tag">Low Poly</span>
+    </div>
+    
+    <div>
+      <span style="font-weight:bold;">Archivos:</span> Fbx, Blend, Obj
+    </div>
+
+<h3 style="text-align:center; margin-top:20px; margin-bottom:15px; color:white;">Imágenes</h3>
+<div class="gallery-container">
+  <button class="gallery-prev">‹</button>
+  <div class="gallery-slide">
+    <img src="ImageMac101.png" alt="FN FAL 1">
+    <img src="ImageMac102.png" alt="FN FAL 2">
+    <img src="ImageMac103.png" alt="FN FAL 3">
+    <img src="ImageMac104.png" alt="FN FAL 4">
+  </div>
+  <button class="gallery-next">›</button>
+</div>
+
+
+<!-- Sección de Modelos Recomendados -->
+<h3 style="text-align:center; margin-top:30px; margin-bottom:15px; color:white;">Modelos Recomendados</h3>
+
+<div id="recommendedModels-fnfal" style="display:flex; justify-content:center; gap:20px; overflow-x:auto; padding:10px 0; white-space: nowrap;">
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+
+<div id="registerOverlay" class="overlay">
+  <div id="registerPanel" class="register-panel">
+    <button class="close-panel" onclick="closeRegister()">✖</button>
+    <h2>Crear Cuenta</h2>
+    <p class="register-note">No tienes la obligación de registrarte para continuar a la página</p>
+
+    <input type="text" id="regName" placeholder="Nombre" class="reg-input">
+    <input type="email" id="regEmail" placeholder="Correo" class="reg-input">
+    <input type="password" id="regPassword" placeholder="Contraseña" class="reg-input">
+    <input type="password" id="regConfirm" placeholder="Confirmar contraseña" class="reg-input">
+
+    <button class="create-btn">Crear Cuenta</button>
+
+    <p style="margin-top:20px; font-size:14px;">
+      ¿Ya tienes una cuenta? <a href="#" style="color:#fff; text-decoration:underline;">Click aquí</a>
+    </p>
+  </div>
+</div>
+
+<script>
+document.querySelector('.register-btn').addEventListener('click', () => {
+  document.getElementById('registerOverlay').style.display = 'flex';
+});
+
+function closeRegister(){
+  document.getElementById('registerOverlay').style.display = 'none';
+}
+</script>
+<script>
+function toggleDropdown() {
+  const dropdown = document.getElementById("myDropdown");
+
+  if(dropdown.classList.contains('show')){
+    dropdown.classList.remove('show');
+    setTimeout(() => dropdown.style.display = 'none', 300);
+  } else {
+    dropdown.style.display = 'flex';
+    setTimeout(() => dropdown.classList.add('show'), 10);
+  }
+}
+
+
+
+
+
+
+
+function toggleSubDropdown(id) {
+  const dropdown = document.getElementById(id);
+  const allDropdowns = document.querySelectorAll('.dropdown-items');
+
+  allDropdowns.forEach(d => {
+    if(d.id !== id) {
+      d.classList.remove('show');
+      setTimeout(() => d.style.display = 'none', 300); // espera la animación
+    }
+  });
+
+  if(dropdown.classList.contains('show')){
+    dropdown.classList.remove('show');
+    setTimeout(() => dropdown.style.display = 'none', 300);
+  } else {
+    dropdown.style.display = 'flex';
+    setTimeout(() => dropdown.classList.add('show'), 10); // pequeño retraso para que se aplique la transición
+  }
+}
+
+
+function selectItem(type, value){
+  document.getElementById(type + 'Text').textContent = value;
+  const dropdown = type === 'tipo' ? document.getElementById('tipoItems') :
+                   type === 'categoria' ? document.getElementById('catItems') :
+                   document.getElementById('precioItems');
+  dropdown.style.display = 'none';
+
+  filterCards();
+}
+
+
+window.addEventListener('click', function(e){
+  const contactDropdown = document.getElementById("myDropdown");
+  const subDropdowns = document.querySelectorAll('.dropdown-items');
+
+  // Cerrar dropdowns de tercera barra
+  if(!e.target.closest('.sub-dropdown')) {
+    subDropdowns.forEach(d => {
+      d.classList.remove('show');
+      setTimeout(() => d.style.display = 'none', 300);
+    });
+  }
+
+  // Cerrar dropdown de contacto
+  if(!e.target.closest('.dropdown-btn') && !e.target.closest('#myDropdown')){
+    contactDropdown.classList.remove('show');
+    setTimeout(() => contactDropdown.style.display = 'none', 300);
+  }
+});
+
+document.querySelectorAll('.card-outer').forEach(outer => {
+  const inner = outer.querySelector('.card-inner');
+  let spinning = false;
+
+  outer.addEventListener('mouseenter', () => {
+    if (!spinning) {
+      spinning = true;
+      outer.classList.add('spin360');
+      setTimeout(() => {
+        outer.classList.remove('spin360');
+        spinning = false;
+        inner.style.transform = `rotateY(0deg) rotateX(0deg) scale(1)`;
+      }, 1000);
+    }
+  });
+
+  inner.addEventListener('mousemove', e => {
+    if (!spinning) { 
+      const rect = inner.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const midX = rect.width / 2;
+      const midY = rect.height / 2;
+      const rotateY = ((x - midX) / midX) * 15;
+      const rotateX = ((midY - y) / midY) * 15;
+      inner.style.transform = `rotateY(${rotateY}deg) rotateX(${rotateX}deg) scale(1)`;
+    }
+  });
+
+  inner.addEventListener('mouseleave', () => {
+    if (!spinning) {
+      inner.style.transform = `rotateY(0deg) rotateX(0deg) scale(1)`;
+    }
+  });
+});
+
+// --- Cerrar panel con el botón "Volver" ---
+document.querySelectorAll('.model-panel .close-panel').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const panel = btn.closest('.model-panel');
+    panel.style.display = "none";
+  });
+});
+
+
+
+
+
+
+
+
+
+function filterCards() {
+  const tipo = document.getElementById('tipoText').textContent;
+  const categoria = document.getElementById('categoriaText').textContent;
+  const precio = document.getElementById('precioText').textContent;
+
+  document.querySelectorAll('.card-outer').forEach(card => {
+    const tags = card.dataset.tags.split(',');
+    
+    const matchTipo = (tipo === 'Todos' || tags.includes(tipo));
+    const matchCategoria = (categoria === 'Todos' || tags.includes(categoria));
+    const matchPrecio = (precio === 'Todos' || tags.includes(precio));
+
+    if(matchTipo && matchCategoria && matchPrecio) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+document.getElementById('searchBtn').addEventListener('click', function() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  
+  document.querySelectorAll('.card-outer').forEach(card => {
+    const name = card.querySelector('h3').textContent.toLowerCase();
+    
+    if(query === "") {
+      // Si el buscador está vacío, mostramos todos los modelos
+      card.style.display = 'block';
+    } else {
+      // Si hay texto, mostramos solo los que coincidan
+      card.style.display = name.includes(query) ? 'block' : 'none';
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+<script>
+(function(){
+  const allCards = Array.from(document.querySelectorAll('.card-outer'));
+
+  document.querySelectorAll('.model-panel').forEach(panel => {
+    const model = panel.dataset.model;
+    const recommendedContainer = panel.querySelector(`#recommendedModels-${model}`);
+    
+    if(!recommendedContainer) return;
+
+    const panelTags = panel.querySelectorAll('.tag');
+    let tags = [];
+    panelTags.forEach(t => tags.push(t.textContent));
+
+    // Filtrar tarjetas que compartan al menos un tag
+    let filteredCards = allCards.filter(card => {
+      const cardTags = card.dataset.tags.split(',');
+      return tags.some(tag => cardTags.includes(tag)) && card.dataset.model !== model;
+    });
+
+    // Mezclar aleatoriamente
+    filteredCards.sort(() => Math.random() - 0.5);
+
+    // Agregar las tarjetas filtradas inicialmente
+    filteredCards.slice(0, 5).forEach(card => {
+      const recCard = createRecCard(card);
+      recommendedContainer.appendChild(recCard);
+    });
+
+    // Si hay menos de 5, rellenar con repetidos aleatorios
+    while(recommendedContainer.children.length < 5 && filteredCards.length > 0){
+      const randomCard = filteredCards[Math.floor(Math.random() * filteredCards.length)];
+      const recCard = createRecCard(randomCard);
+      recommendedContainer.appendChild(recCard);
+    }
+  });
+
+  // Función auxiliar para crear la tarjeta recomendada
+  function createRecCard(card){
+    const recCard = document.createElement('div');
+    recCard.className = "recommended-card";
+    recCard.style.cssText = `
+      display:inline-block;
+      width:150px;
+      background:#2a2a2a;
+      border:2px solid #888;
+      border-radius:8px;
+      padding:10px;
+      cursor:pointer;
+      text-align:center;
+      box-shadow:0 0 8px rgba(0,0,0,0.7);
+      transition: transform 0.2s ease;
+    `;
+
+    const img = card.querySelector('img').cloneNode(true);
+    img.style.maxWidth = "120px";
+    img.style.height = "auto";
+    recCard.appendChild(img);
+
+    const name = document.createElement('h4');
+    name.textContent = card.querySelector('h3').textContent;
+    name.style.color = "white";
+    name.style.marginTop = "10px";
+    recCard.appendChild(name);
+
+    recCard.addEventListener('mousemove', e => {
+      const rect = recCard.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const midX = rect.width/2;
+      const midY = rect.height/2;
+      const rotateY = ((x-midX)/midX)*15;
+      const rotateX = ((midY-y)/midY)*15;
+      recCard.style.transform = `rotateY(${rotateY}deg) rotateX(${rotateX}deg) scale(1.05)`;
+    });
+
+    recCard.addEventListener('mouseleave', () => {
+      recCard.style.transform = "rotateY(0deg) rotateX(0deg) scale(1)";
+    });
+
+recCard.addEventListener('click', () => {
+  // Cerrar todos los paneles abiertos
+  document.querySelectorAll('.model-panel').forEach(p => {
+    p.style.display = "none";
+  });
+
+  // Abrir el panel correspondiente
+  const targetPanel = document.querySelector(`.model-panel[data-model="${card.dataset.model}"]`);
+  if(targetPanel) targetPanel.style.display = "block";
+});
+
+    return recCard;
+  }
+
+})();
+</script>
+
+
+
+<script>
+// Script para calificación de estrellas con hover
+document.querySelectorAll('.model-panel').forEach(panel => {
+  const stars = panel.querySelectorAll('.star');
+  let rating = 0;
+
+  function updateStars(tempRating = 0) {
+    stars.forEach(s => {
+      if (tempRating > 0) {
+        // hover temporal
+        s.textContent = parseInt(s.dataset.value) <= tempRating ? '★' : '☆';
+        s.style.color = parseInt(s.dataset.value) <= tempRating ? 'red' : '#888';
+      } else {
+        // valor real
+        s.textContent = parseInt(s.dataset.value) <= rating ? '★' : '☆';
+        s.style.color = parseInt(s.dataset.value) <= rating ? 'red' : '#888';
+      }
+    });
+  }
+
+  stars.forEach(star => {
+    star.addEventListener('mouseover', () => {
+      const tempRating = parseInt(star.dataset.value);
+      updateStars(tempRating);
+    });
+
+    star.addEventListener('mouseout', () => {
+      updateStars();
+    });
+
+    star.addEventListener('click', () => {
+      rating = parseInt(star.dataset.value);
+      updateStars();
+    });
+  });
+});
+</script>
+
+<script>
+// --- Abrir panel correspondiente al hacer click en cualquier tarjeta ---
+document.querySelectorAll('.card-outer').forEach(card => {
+  card.addEventListener('click', () => {
+    const model = card.dataset.model;
+    const panel = document.querySelector(`.model-panel[data-model="${model}"]`);
+    if(panel){
+      panel.style.display = "block";
+	  
+    }
+  });
+});
+
+// --- Cerrar panel con el botón "Volver" ---
+document.querySelectorAll('.model-panel .close-panel').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const panel = btn.closest('.model-panel');
+    panel.style.display = "none";
+  });
+});
+</script>
+
+<Script>
+// Script para carrusel
+const mauserContainer = document.querySelectorAll('.gallery-container');
+
+mauserContainer.forEach(container => {
+  const slide = container.querySelector('.gallery-slide');
+  const images = slide.querySelectorAll('img');
+  let currentIndex = 0;
+
+  const updateSlide = () => {
+    const offset = -currentIndex * (images[0].clientWidth + 15); // gap
+    slide.style.transform = `translateX(${offset}px)`;
+  };
+
+  container.querySelector('.gallery-next').addEventListener('click', () => {
+    currentIndex = (currentIndex + 1) % images.length;
+    updateSlide();
+  });
+
+  container.querySelector('.gallery-prev').addEventListener('click', () => {
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    updateSlide();
+  });
+
+  images.forEach((img, index) => {
+    img.addEventListener('click', () => {
+      currentIndex = index;
+      updateSlide();
+    });
+  });
+});
+
+
+</Script>
+</body>
+</html>
