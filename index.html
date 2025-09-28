@@ -30,7 +30,7 @@
 
   .neon-top { top: 0; }
   .neon-bottom { bottom: 0; }
-
+	
 .neon-line-vertical {
   position: fixed;
   top: 0;
@@ -1157,6 +1157,40 @@
 
 
 <script>
+// Guardar datos al crear cuenta
+document.querySelector('.create-btn').addEventListener('click', () => {
+    const nombre = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
+    const confirm = document.getElementById('regConfirm').value.trim();
+
+    if (!nombre || !email || !password || !confirm) {
+        alert("Por favor, completa todos los campos.");
+        return;
+    }
+
+    if (password !== confirm) {
+        alert("Las contraseñas no coinciden.");
+        return;
+    }
+
+    // Guardar en localStorage
+    const user = { nombre, email, password };
+    localStorage.setItem('user', JSON.stringify(user));
+
+    alert("Cuenta creada correctamente!");
+
+    // Limpiar campos
+    document.getElementById('regName').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPassword').value = '';
+    document.getElementById('regConfirm').value = '';
+
+    closeRegister();
+});
+
+
+		
   // Abrir login desde registro
   document.getElementById('openLogin').addEventListener('click', () => {
     closeRegister();
@@ -1604,4 +1638,5 @@ document.querySelector('#loginPanel .create-btn').addEventListener('click', () =
 	
 </body>
 </html>
+
 
