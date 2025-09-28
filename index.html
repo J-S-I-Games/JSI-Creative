@@ -1157,8 +1157,7 @@
 
 
 <script>
-// Guardar datos al crear cuenta
-document.querySelector('.create-btn').addEventListener('click', () => {
+	document.querySelector('.create-btn').addEventListener('click', async () => {
     const nombre = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const password = document.getElementById('regPassword').value.trim();
@@ -1174,20 +1173,34 @@ document.querySelector('.create-btn').addEventListener('click', () => {
         return;
     }
 
-    // Guardar en localStorage
-    const user = { nombre, email, password };
-    localStorage.setItem('user', JSON.stringify(user));
+    try {
+        // 1️⃣ Crear usuario en Firebase Auth
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
 
-    alert("Cuenta creada correctamente!");
+        // 2️⃣ Guardar datos adicionales en Firestore
+        await db.collection("users").doc(user.uid).set({
+            nombre: nombre,
+            email: email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
 
-    // Limpiar campos
-    document.getElementById('regName').value = '';
-    document.getElementById('regEmail').value = '';
-    document.getElementById('regPassword').value = '';
-    document.getElementById('regConfirm').value = '';
+        alert("Cuenta creada correctamente!");
+        
+        // Limpiar campos
+        document.getElementById('regName').value = '';
+        document.getElementById('regEmail').value = '';
+        document.getElementById('regPassword').value = '';
+        document.getElementById('regConfirm').value = '';
 
-    closeRegister();
+        closeRegister();
+    } catch (error) {
+        console.error(error);
+        alert(error.message);
+    }
 });
+
+
 
 
 		
@@ -1638,5 +1651,6 @@ document.querySelector('#loginPanel .create-btn').addEventListener('click', () =
 	
 </body>
 </html>
+
 
 
