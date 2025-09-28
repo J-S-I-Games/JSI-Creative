@@ -1157,15 +1157,6 @@
 
 
 <script>
-  // Abrir registro
-  document.querySelector('.register-btn').addEventListener('click', () => {
-    document.getElementById('registerOverlay').style.display = 'flex';
-  });
-
-  function closeRegister() {
-    document.getElementById('registerOverlay').style.display = 'none';
-  }
-
   // Abrir login desde registro
   document.getElementById('openLogin').addEventListener('click', () => {
     closeRegister();
@@ -1525,6 +1516,92 @@ mauserContainer.forEach(container => {
 
 document.getElementById('visitas').textContent = nuevoNumero;
 
+
+
+
+
+
+
+document.querySelector('#registerPanel .create-btn').addEventListener('click', () => {
+  const name = document.getElementById('regName').value;
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regConfirm').value;
+
+  if(password !== confirm){
+    alert("Las contraseñas no coinciden");
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+
+      // Guardar nombre en Firestore
+      db.collection('usuarios').doc(user.uid).set({
+        nombre: name,
+        email: email
+      });
+
+      alert("Cuenta creada con éxito");
+      closeRegister();
+    })
+    .catch(error => {
+      alert(error.message);
+    });
+});
+document.querySelector('#loginPanel .create-btn').addEventListener('click', () => {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      const user = userCredential.user;
+      alert("Bienvenido " + user.email);
+      closeLogin();
+      // Aquí podrías redirigir a otra página o mostrar contenido
+    })
+    .catch(error => {
+      alert(error.message);
+    });
+});
+
 </Script>
+	
+<!-- Firebase App (obligatorio) -->
+<script src="https://www.gstatic.com/firebasejs/10.15.0/firebase-app-compat.js"></script>
+
+<!-- Firebase Authentication -->
+<script src="https://www.gstatic.com/firebasejs/10.15.0/firebase-auth-compat.js"></script>
+
+<!-- Firebase Firestore (opcional, para guardar nombres u otros datos) -->
+<script src="https://www.gstatic.com/firebasejs/10.15.0/firebase-firestore-compat.js"></script>
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCrZU4jrYQdLWICNIa-PsaurM-nQNDVcMk",
+    authDomain: "jsi-creative.firebaseapp.com",
+    projectId: "jsi-creative",
+    storageBucket: "jsi-creative.firebasestorage.app",
+    messagingSenderId: "622524062601",
+    appId: "1:622524062601:web:69d2afeeb6503c2a605f58",
+    measurementId: "G-SMYBMVEJ48"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
+	
 </body>
 </html>
+
