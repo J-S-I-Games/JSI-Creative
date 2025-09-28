@@ -797,43 +797,9 @@
 </style>
 </head>
 <body>
-<!-- Firebase App -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-
-<!-- Firebase Auth -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-
-<!-- Firebase Firestore -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-
-	
-<script>
-  // Inicializa Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyCrZU4jrYQdLWICNIa-PsaurM-nQNDVcMk",
-    authDomain: "jsi-creative.firebaseapp.com",
-    projectId: "jsi-creative",
-    storageBucket: "jsi-creative.firebasestorage.app",
-    messagingSenderId: "622524062601",
-    appId: "1:622524062601:web:69d2afeeb6503c2a605f58",
-    measurementId: "G-SMYBMVEJ48"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-</script>
-
-
-
-
-	
 <div class="visitas-box">
     Visitas: <span id="visitas">0</span>
   </div>
-  
-  
-  
 <div class="neon-line-vertical"></div>
 <div class="top-bar">
   <div class="dropdown-wrapper">
@@ -844,12 +810,7 @@
       <a href="https://www.youtube.com" target="_blank" class="btn-style">YouTube</a>
     </div>
   </div>
-  
-  
 </div>
-
-
-
 <div class="second-bar">
   <!-- Contenedor de logo + buscador -->
   <div class="left-items">
@@ -1187,48 +1148,67 @@
 
 
 <script>
-	document.querySelector('.create-btn').addEventListener('click', async () => {
+	<script type="module">
+  // Firebase App
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCrZU4jrYQdLWICNIa-PsaurM-nQNDVcMk",
+    authDomain: "jsi-creative.firebaseapp.com",
+    projectId: "jsi-creative",
+    storageBucket: "jsi-creative.firebasestorage.app",
+    messagingSenderId: "622524062601",
+    appId: "1:622524062601:web:69d2afeeb6503c2a605f58",
+    measurementId: "G-SMYBMVEJ48"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  document.querySelector('.create-btn').addEventListener('click', async () => {
     const nombre = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const password = document.getElementById('regPassword').value.trim();
     const confirm = document.getElementById('regConfirm').value.trim();
 
     if (!nombre || !email || !password || !confirm) {
-        alert("Por favor, completa todos los campos.");
-        return;
+      alert("Por favor, completa todos los campos.");
+      return;
     }
 
     if (password !== confirm) {
-        alert("Las contraseñas no coinciden.");
-        return;
+      alert("Las contraseñas no coinciden.");
+      return;
     }
 
     try {
-        // 1️⃣ Crear usuario en Firebase Auth
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-        // 2️⃣ Guardar datos adicionales en Firestore
-        await db.collection("users").doc(user.uid).set({
-            nombre: nombre,
-            email: email,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+      await setDoc(doc(db, "users", user.uid), {
+        nombre: nombre,
+        email: email,
+        createdAt: serverTimestamp()
+      });
 
-        alert("Cuenta creada correctamente!");
-        
-        // Limpiar campos
-        document.getElementById('regName').value = '';
-        document.getElementById('regEmail').value = '';
-        document.getElementById('regPassword').value = '';
-        document.getElementById('regConfirm').value = '';
+      alert("Cuenta creada correctamente!");
 
-        closeRegister();
+      document.getElementById('regName').value = '';
+      document.getElementById('regEmail').value = '';
+      document.getElementById('regPassword').value = '';
+      document.getElementById('regConfirm').value = '';
+
+      closeRegister();
     } catch (error) {
-        console.error(error);
-        alert(error.message);
+      console.error(error);
+      alert(error.message);
     }
-});
+  });
+</script>
+
 
 
 
@@ -1651,6 +1631,7 @@ document.querySelector('#loginPanel .create-btn').addEventListener('click', () =
 	
 </body>
 </html>
+
 
 
 
