@@ -1,17 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
 <head>
-
 <script type="module">
-  // Importar módulos de Firebase (v12.3.0)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, updateProfile } 
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } 
     from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
   import { getFirestore, doc, setDoc } 
     from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
 
-  // Configuración de tu proyecto Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCrZU4jrYQdLWICNIa-PsaurM-nQNDVcMk",
     authDomain: "jsi-creative.firebaseapp.com",
@@ -22,29 +19,50 @@
     measurementId: "G-SMYBMVEJ48"
   };
 
-  // Inicializar Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Crear usuario con email y contraseña
   document.addEventListener("DOMContentLoaded", () => {
-    const registerBtn = document.querySelector(".create-btn");
-    if (registerBtn) {
-      registerBtn.addEventListener("click", async () => {
-        const email = document.querySelector("#regEmail").value;
-const password = document.querySelector("#regPassword").value;
-const username = document.querySelector("#regName").value;
 
+    const createBtn = document.querySelector(".create-btn"); 
+    const closeBtn = document.querySelector(".close-panel"); 
+    const registerBtn = document.querySelector(".register-btn"); 
+    const loginBtn = document.getElementById("loginBtn");
+    const closeLoginBtn = document.querySelector("#loginPanel .close-panel");
+
+    function handleLoginSuccess(user) {
+      localStorage.setItem("uid", user.uid);
+      localStorage.setItem("displayName", user.displayName || user.email);
+
+      document.getElementById("loginOverlay").style.display = "none";
+      document.getElementById("registerOverlay").style.display = "none";
+
+      if (registerBtn) registerBtn.style.display = "none";
+      const linesBtnContainer = document.getElementById("linesBtnContainer");
+      if (linesBtnContainer) linesBtnContainer.style.display = "flex";
+    }
+    if (createBtn && closeBtn) {
+      createBtn.addEventListener("click", async () => {
+        createBtn.disabled = true;
+        closeBtn.disabled = true;
+
+        const email = document.querySelector("#regEmail").value;
+        const password = document.querySelector("#regPassword").value;
+        const confirmPassword = document.querySelector("#regConfirm").value;
+        const username = document.querySelector("#regName").value;
+
+        if (password !== confirmPassword) {
+          alert("Las contraseñas no coinciden ❌");
+          createBtn.disabled = false;
+          closeBtn.disabled = false;
+          return;
+        }
 
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-          // Actualizar nombre de usuario
           await updateProfile(userCredential.user, { displayName: username });
-
-          // Guardar datos en Firestore
           await setDoc(doc(db, "users", userCredential.user.uid), {
             username,
             email,
@@ -52,18 +70,78 @@ const username = document.querySelector("#regName").value;
           });
 
           alert("Cuenta creada con éxito ✅");
+          handleLoginSuccess(userCredential.user);
+
         } catch (error) {
           console.error("Error al registrar:", error);
           alert("Error: " + error.message);
+        } finally {
+          createBtn.disabled = false;
+          closeBtn.disabled = false;
         }
       });
     }
-  });
+    if (loginBtn) {
+      loginBtn.addEventListener("click", async () => {
+        loginBtn.disabled = true;
+        if (closeLoginBtn) closeLoginBtn.disabled = true;
+
+        const email = document.getElementById("loginEmail").value;
+        const password = document.getElementById("loginPassword").value;
+
+        if (!email || !password) {
+          alert("Por favor completa todos los campos.");
+          loginBtn.disabled = false;
+          if (closeLoginBtn) closeLoginBtn.disabled = false;
+          return;
+        }
+
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          alert(`¡Bienvenido ${userCredential.user.displayName || userCredential.user.email}! ✅`);
+          handleLoginSuccess(userCredential.user);
+
+        } catch (error) {
+          console.error("Error al iniciar sesión:", error);
+          alert("Error: " + error.message);
+        } finally {
+          loginBtn.disabled = false;
+          if (closeLoginBtn) closeLoginBtn.disabled = false;
+        }
+      });
+    }
+	
+    const savedUid = localStorage.getItem("uid");
+if (savedUid) {
+  const displayName = localStorage.getItem("displayName");
+  const linesBtnContainer = document.getElementById("linesBtnContainer");
+  if (linesBtnContainer) linesBtnContainer.style.display = "flex";
+  if (registerBtn) registerBtn.style.display = "none";
+  const registerOverlay = document.getElementById("registerOverlay");
+  const loginOverlay = document.getElementById("loginOverlay");
+  if (registerOverlay) registerOverlay.style.display = "none";
+  if (loginOverlay) loginOverlay.style.display = "none";
+
+  console.log(`Usuario cargado desde localStorage: ${displayName}`);
+}
+  });  
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+onAuthStateChanged(auth, (user) => {
+  const emailField = document.getElementById("userEmail");
+  const nameField = document.getElementById("user");
+
+  if (user) {
+    if (emailField) emailField.textContent = user.email || "Correo no disponible";
+    if (nameField) nameField.textContent = user.displayName || "Nombre no disponible";
+  } else {
+    if (emailField) emailField.textContent = "No has iniciado sesión";
+    if (nameField) nameField.textContent = "";
+  }
+});
+
+
 </script>
-
-
-
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>J-S-I Creative</title>
@@ -98,7 +176,7 @@ const username = document.querySelector("#regName").value;
   position: fixed;
   top: 0;
   bottom: 0;
-  width: 2px;           /* finita */
+  width: 2px;
   background: white;
   box-shadow: 0 0 5px white, 0 0 10px white;
   z-index: 0;
@@ -149,9 +227,6 @@ const username = document.querySelector("#regName").value;
   transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: none;
 }
-
-
-
   .dropdown-content a {
     color: white;
     text-decoration: none;
@@ -218,7 +293,7 @@ const username = document.querySelector("#regName").value;
   opacity: 0;
   transform: translateY(-10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none; /* para que no interfiera cuando está oculto */
+  pointer-events: none;
 }
 
 .dropdown-items.show {
@@ -260,15 +335,8 @@ const username = document.querySelector("#regName").value;
   text-align: inherit;
 }
 .card-outer:focus {
-  outline: none; /* quita el borde azul de foco */
+  outline: none; 
 }
-
-
-
-
-
-
-
 
 @keyframes spin360Scale {
   0% { transform: rotateY(0deg) scale(1); }
@@ -295,8 +363,7 @@ const username = document.querySelector("#regName").value;
   flex-wrap: wrap;
   gap: 30px;
   justify-content: flex-start;
-  margin: 80px 20px 40px 20px; /* ↑ ↑ ↑ ↑ */
-  /* top | right | bottom | left */
+  margin: 80px 20px 40px 20px;
 }
 
 
@@ -436,7 +503,7 @@ const username = document.querySelector("#regName").value;
 
 
 .panel-content .action-btn {
-  background-color: #444;      /* gris oscuro */
+  background-color: #444;
   color: white;
   border: none;
   padding: 8px 18px;
@@ -609,11 +676,6 @@ const username = document.querySelector("#regName").value;
   background: #555;
 }
 
-
-
-
-
-/* Botón de contacto */
 .dropdown-content a.btn-style {
   display: block;  
   margin: 5px 0;
@@ -650,12 +712,9 @@ const username = document.querySelector("#regName").value;
 .dropdown-content.show {
   display: flex;
   opacity: 1;
-  transform: translateX(-50%) translateY(0); /* posición final */
+  transform: translateX(-50%) translateY(0);
   pointer-events: auto;
 }
-
-
-
 
 .search-box {
   padding: 8px 12px;
@@ -690,7 +749,7 @@ const username = document.querySelector("#regName").value;
 }
 
 .search-input::placeholder {
-  color: #eee; /* placeholder más claro */
+  color: #eee;
 }
 .second-bar {
   background-color: #333;
@@ -702,7 +761,7 @@ const username = document.querySelector("#regName").value;
   z-index: 999;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* separa izquierda y derecha */
+  justify-content: space-between;
   padding: 0 30px;
   gap: 20px;
 }
@@ -710,7 +769,7 @@ const username = document.querySelector("#regName").value;
 .left-items {
   display: flex;
   align-items: center;
-  gap: 20px; /* espacio entre logo y buscador */
+  gap: 20px;
 }
 
 .search-container {
@@ -729,13 +788,6 @@ const username = document.querySelector("#regName").value;
   width: 200px;
 }
 
-
-
-
-
-
-
-/* Galería estilo carrusel (mismo estilo que FN FAL) */
 .gallery-container {
   position: relative;
   width: 90%;
@@ -796,16 +848,6 @@ const username = document.querySelector("#regName").value;
   z-index: 1001;
 }
 
-
-
-
-
-
-
-
-
-
-
   .modal-content input {
     width: 90%;
     padding: 10px;
@@ -857,6 +899,297 @@ const username = document.querySelector("#regName").value;
   cursor: pointer;
 }
 
+.container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Botón de las rayas */
+.lines-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5px;
+  border: 2px solid #fff;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.lines-btn span {
+  width: 15px;
+  height: 3px;
+  background-color: #fff;
+  margin: 3px 0;
+  border-radius: 0px;
+}
+
+.lines-btn:hover {
+  transform: scale(1.1);
+  border-color: #d7d7d7;
+}
+#linesBtnContainer {
+  display: none;
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1000;
+}
+
+
+  .lines-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+  .lines-btn.active span:nth-child(2) {
+    opacity: 0;
+  }
+  .lines-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  #sideMenu {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 250px;
+    height: 100%;
+    background-color: #222;
+    color: white;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+    transition: right 0.3s;
+    z-index: 9999999999999999999999999;
+  }
+
+  #sideMenu.open {
+    right: 0;
+  }
+  
+
+  .side-menu {
+    text-align: center;
+    color: #fff;
+    background: #111;
+    padding: 20px;
+    width: 250px;
+    font-family: Arial, sans-serif;
+    border: 2px solid #666;
+  }
+
+  .side-menu h2 {
+    margin-bottom: 15px;
+    font-size: 22px;
+    border-bottom: 1px solid #666;
+    padding-bottom: 8px;
+  }
+
+  .user-info {
+    margin: 5px 0;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .section-title {
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  .separator, .separator-buttons {
+    width: 100%;
+    height: 2px;
+    background: #666;
+    margin: 8px 0;
+  }
+
+  .separator-buttons {
+    margin-top: 20px;
+  }
+
+  /* Contenedor de botones */
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px; 
+  }
+
+  .btn {
+    padding: 10px 15px;
+    border: 2px solid #666;
+    cursor: pointer;
+    background: #222;
+    color: #fff;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+
+  .btn:hover {
+    background: #333;
+    border-color: #aaa;
+  }
+
+  #deleteBtn:hover {
+    background: #500;
+    border-color: #a00;
+  }
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background-color: rgba(0,0,0,0.9);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 9999;
+}
+
+.card-outer:hover .tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-15px); 
+}
+
+.card-outer {
+  position: relative;
+}
+
+
+
+
+
+
+
+
+/* ----- Contenedor de las armas calificadas ----- */
+/* Contenedor de armas calificadas */
+.armas-calificadas-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+
+/* Tarjeta individual */
+.armas-calificadas-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+
+.arma-calificada-card:hover {
+  transform: scale(1.05);
+}
+
+/* Imagen del arma */
+.arma-calificada-img {
+  width: 70px !important;
+  height: 70px !important;
+}
+
+
+/* Nombre del arma */
+.arma-calificada-nombre {
+  font-size: 0.75rem;
+  margin: 1px 0;
+  text-align: center;
+  color: #fff;
+  word-wrap: break-word;
+}
+
+/* Estrellas del usuario */
+.arma-calificada-rating {
+  font-size: 0.7rem;
+  margin: 0;
+  text-align: center;
+  color: #ff4d4d;
+}
+.arma-calificada-card * {
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ----- Encabezado y botones fijos arriba ----- */
+.perfil-section-title,
+.perfil-user-info,
+.perfil-header,
+.perfil-button-container {
+  position: sticky;
+  top: 0;
+  background: transparent; /* sin fondo oscuro */
+  z-index: 100;
+}
+
+/* ----- Botones del perfil (sin cambios del estilo anterior) ----- */
+.perfil-button-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  position: sticky;
+  bottom: 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 150; /* encima de las tarjetas */
+}
+
+
+/* Estilo base */
+.perfil-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 0; /* sin bordes redondeados */
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  color: #fff;
+  background: rgba(40, 40, 40, 0.8);
+}
+
+/* Hover */
+.perfil-btn:hover {
+  background: rgba(80, 80, 80, 0.9);
+  transform: scale(1.02);
+}
+
+/* Botón izquierdo: salir */
+.perfil-btn-left {
+  background: rgba(50, 50, 50, 0.8);
+}
+
+.perfil-btn-left:hover {
+  background: rgba(90, 90, 90, 0.9);
+}
+
+/* Botón derecho: eliminar cuenta */
+.perfil-btn-right {
+  background: rgba(100, 0, 0, 0.8);
+}
+
+.perfil-btn-right:hover {
+  background: rgba(150, 0, 0, 0.9);
+}
+
+
+
 </style>
 </head>
 <body>
@@ -877,14 +1210,10 @@ const username = document.querySelector("#regName").value;
       <a href="https://www.youtube.com" target="_blank" class="btn-style">YouTube</a>
     </div>
   </div>
-  
-  
 </div>
 
 
-
 <div class="second-bar">
-  <!-- Contenedor de logo + buscador -->
   <div class="left-items">
     <img src="Logo.png" alt="Logo">
     <div class="search-container">
@@ -892,14 +1221,29 @@ const username = document.querySelector("#regName").value;
       <button id="searchBtn" class="btn-style">Buscar</button>
     </div>
   </div>
+  
+  
+ <div id="linesBtnContainer" class="container">
+    <button class="lines-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+</div>
 
-  <!-- Botón a la derecha -->
+
+  
   <button class="register-btn btn-style">Registrarse</button>
+  
+  
+ 
+  
+  
+  </div>
 </div>
 
 
 <div class="sub-bar">
-  <!-- Tipo de modelos -->
   <div class="sub-dropdown">
     <button class="dropdown-display btn-style" onclick="toggleSubDropdown('tipoItems')">Tipo de modelos</button>
     <div class="dropdown-items" id="tipoItems">
@@ -910,8 +1254,7 @@ const username = document.querySelector("#regName").value;
     </div>
     <span class="selected-text" id="tipoText">Todos</span>
   </div>
-
-  <!-- Categoría -->
+  
   <div class="sub-dropdown">
     <button class="dropdown-display btn-style" onclick="toggleSubDropdown('catItems')">Categoría</button>
     <div class="dropdown-items" id="catItems">
@@ -927,7 +1270,6 @@ const username = document.querySelector("#regName").value;
     <span class="selected-text" id="categoriaText">Todos</span>
   </div>
 
-  <!-- Precio -->
   <div class="sub-dropdown">
     <button class="dropdown-display btn-style" onclick="toggleSubDropdown('precioItems')">Precio</button>
     <div class="dropdown-items" id="precioItems">
@@ -939,38 +1281,45 @@ const username = document.querySelector("#regName").value;
   </div>
 </div>
 
-
-  
-  <!-- Contenedor de tarjetas -->
 <div class="cards-container">
-  <button class="card-outer" data-model="fnfal" data-tags="Todos,Militar,Armas,De pago,Low Poly">
-    <div class="card-inner">
-      <img src="FNFalImage.png" alt="FN FAL Low Poly">
-      <h3>FN FAL</h3>
-    </div>
-  </button>
 
-  <button class="card-outer" data-model="mauser1909" data-tags="Todos,Militar,Armas,De pago,Low Poly">
-    <div class="card-inner">
-      <img src="ArmaMauserModelo1909Mauser.png" alt="Mauser 1909 Low Poly">
-      <h3>Mauser 1909</h3>
-    </div>
-  </button>
-  
-  <button class="card-outer" data-model="mac-10" data-tags="Todos,Militar,Armas,Gratis,Low Poly">
-    <div class="card-inner">
-      <img src="IconoMac10.png" alt="Mac-10 Low Poly">
-      <h3>Mac - 10</h3>
-    </div>
-  </button>
-  
-    <!-- Podés agregar más tarjetas aquí -->
+ <button class="card-outer" data-model="fnfal" data-tags="Todos,Militar,Armas,De pago,Low Poly">
+  <div class="card-inner">
+    <img src="FNFalImage.png" alt="FN FAL Low Poly">
+    <h3>FN FAL</h3>
+  </div>
+  <div class="tooltip">
+    Precio: $2<br>
+    Archivos: fbx, obj, blend<br>
+    Estrellas: <span class="totalStars" data-model="fnfal">0</span>
+  </div>
+</button>
+
+<button class="card-outer" data-model="mauser1909" data-tags="Todos,Militar,Armas,De pago,Low Poly">
+  <div class="card-inner">
+    <img src="ArmaMauserModelo1909Mauser.png" alt="Mauser 1909 Low Poly">
+    <h3>Mauser 1909</h3>
+  </div>
+  <div class="tooltip">
+    Precio: $2<br>
+    Archivos: fbx, obj, blend<br>
+    Estrellas: <span class="totalStars" data-model="mauser1909">0</span>
+  </div>
+</button>
+
+<button class="card-outer" data-model="mac-10" data-tags="Todos,Militar,Armas,Gratis,Low Poly">
+  <div class="card-inner">
+    <img src="IconoMac10.png" alt="Mac-10 Low Poly">
+    <h3>Mac - 10</h3>
+  </div>
+  <div class="tooltip">
+    Precio: Gratis<br>
+    Archivos: fbx, obj, blend<br>
+    Estrellas: <span class="totalStars" data-model="mac-10">0</span>
+  </div>
+</button>
 </div>
 </div>
-
-
-
-
 
 
 <!-- Panel emergente FN FAL -->
@@ -988,16 +1337,14 @@ const username = document.querySelector("#regName").value;
         <button class="action-btn btn-style" onclick="window.open('https://www.cgtrader.com/3d-models/military/gun/fn-fal-83-low-poly', '_blank')">Comprar a $2</button>
       </div>
     </div>
-    
-	<!-- Sección de calificación dentro del panel FN FAL -->
-<div style="margin-bottom:15px;">
+<div style="margin-bottom:15px;"> 
   <span style="font-weight:bold; margin-right:10px;">Califica este modelo :</span>
   <span class="star" data-value="1" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
   <span class="star" data-value="2" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
   <span class="star" data-value="3" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
-  <span class="star" data-value="4" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
+  <span class="star" data-value="4" style="font-size:30px; cursor:pointer; color:#888;">☆</span> 
   <span class="star" data-value="5" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
-  <button class="action-btn btn-style" style="margin-left:10px;">Calificar</button>
+  <button id="rateBtn" class="action-btn rate-btn" style="margin-left:10px;">Calificar</button>
 </div>
 	
 	
@@ -1013,11 +1360,7 @@ const username = document.querySelector("#regName").value;
     <div>
       <span style="font-weight:bold;">Archivos:</span> Fbx, Blend, Obj
     </div>
-
-    <!-- Título de la galería -->
 <h3 style="text-align:center; margin-top:20px; margin-bottom:15px; color:white;">Imágenes</h3>
-
-<!-- Contenedor de la galería con carrusel -->
 <div class="gallery-container">
   <button class="gallery-prev">‹</button>
   <div class="gallery-slide">
@@ -1028,13 +1371,10 @@ const username = document.querySelector("#regName").value;
   </div>
   <button class="gallery-next">›</button>
 </div>
-
-
-<!-- Sección de Modelos Recomendados -->
 <h3 style="text-align:center; margin-top:30px; margin-bottom:15px; color:white;">Modelos Recomendados</h3>
 
 <div id="recommendedModels-fnfal" style="display:flex; justify-content:center; gap:20px; overflow-x:auto; padding:10px 0; white-space: nowrap;">
-  <!-- Tarjetas recomendadas se generarán con JS -->
+ 
 </div>
 </div>
 </div>
@@ -1058,8 +1398,6 @@ const username = document.querySelector("#regName").value;
     </div>
 	
 	
-	
-    <!-- Sección de calificación -->
     <div style="margin-bottom:15px;">
       <span style="font-weight:bold; margin-right:10px;">Califica este modelo :</span>
       <span class="star" data-value="1" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
@@ -1067,10 +1405,8 @@ const username = document.querySelector("#regName").value;
       <span class="star" data-value="3" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
       <span class="star" data-value="4" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
       <span class="star" data-value="5" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
-      <button class="action-btn btn-style" style="margin-left:10px;">Calificar</button>
+      <button class="action-btn rate-btn" style="margin-left:10px;">Calificar</button>
     </div>
-    
-    <!-- Tags -->
     <div style="margin-bottom:15px;">
       <span style="font-weight:bold; margin-right:5px;">Tags:</span>
       <span class="tag">Todos</span>
@@ -1083,11 +1419,7 @@ const username = document.querySelector("#regName").value;
     <div>
       <span style="font-weight:bold;">Archivos:</span> Fbx, Blend, Obj
     </div>
-    
-	<!-- Título de la galería -->
 <h3 style="text-align:center; margin-top:20px; margin-bottom:15px; color:white;">Imágenes</h3>
-
-<!-- Contenedor de la galería con carrusel -->
 <div class="gallery-container">
   <button class="gallery-prev">‹</button>
   <div class="gallery-slide">
@@ -1099,21 +1431,15 @@ const username = document.querySelector("#regName").value;
   <button class="gallery-next">›</button>
 </div>
 
-	
-	
-    <!-- Sección de Modelos Recomendados -->
     <h3 style="text-align:center; margin-top:30px; margin-bottom:15px; color:white;">Modelos Recomendados</h3>
     
     <div id="recommendedModels-mauser1909" style="display:flex; justify-content:center; gap:20px; overflow-x:auto; padding:10px 0; white-space: nowrap;">
-      <!-- Aquí se generan las tarjetas recomendadas con JS -->
+    
     </div>
     
   </div>
 </div>
 
-
-
-<!-- Panel emergente FN FAL -->
 <div class="model-panel" data-model="mac-10" style="overflow-y:auto;">
   <button class="close-panel">Volver</button>
   <div class="panel-content" style="text-align:center; padding:20px; box-sizing:border-box;">
@@ -1129,7 +1455,6 @@ const username = document.querySelector("#regName").value;
       </div>
     </div>
     
-	<!-- Sección de calificación dentro del panel mac 10-->
 <div style="margin-bottom:15px;">
   <span style="font-weight:bold; margin-right:10px;">Califica este modelo :</span>
   <span class="star" data-value="1" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
@@ -1137,7 +1462,9 @@ const username = document.querySelector("#regName").value;
   <span class="star" data-value="3" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
   <span class="star" data-value="4" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
   <span class="star" data-value="5" style="font-size:30px; cursor:pointer; color:#888;">☆</span>
-  <button class="action-btn btn-style" style="margin-left:10px;">Calificar</button>
+ <button id="rateBtn" class="action-btn rate-btn" style="margin-left:10px;">Calificar</button>
+
+
 </div>
 	
 	
@@ -1165,9 +1492,6 @@ const username = document.querySelector("#regName").value;
   </div>
   <button class="gallery-next">›</button>
 </div>
-
-
-<!-- Sección de Modelos Recomendados -->
 <h3 style="text-align:center; margin-top:30px; margin-bottom:15px; color:white;">Modelos Recomendados</h3>
 
 <div id="recommendedModels-mac-10" style="display:flex; justify-content:center; gap:20px; overflow-x:auto; padding:10px 0; white-space: nowrap;">
@@ -1176,9 +1500,6 @@ const username = document.querySelector("#regName").value;
 </div>
 </div>
 </div>
-
-
-<!-- Panel de Crear Cuenta -->
 <div id="registerOverlay" class="overlay">
   <div id="registerPanel" class="register-panel">
     <button class="close-panel" onclick="closeRegister()">✖</button>
@@ -1199,18 +1520,14 @@ const username = document.querySelector("#regName").value;
   </div>
 </div>
 
-<!-- Panel de Iniciar Sesión -->
 <div id="loginOverlay" class="overlay">
   <div id="loginPanel" class="register-panel">
     <button class="close-panel" onclick="closeLogin()">✖</button>
     <h2>Iniciar Sesión</h2>
     <p class="register-note">Ingresa con tu correo y contraseña</p>
-
     <input type="email" id="loginEmail" placeholder="Correo" class="reg-input">
     <input type="password" id="loginPassword" placeholder="Contraseña" class="reg-input">
-
-    <button class="create-btn">Iniciar Sesión</button>
-
+<button id="loginBtn" class="create-btn">Iniciar Sesión</button>
     <p style="margin-top:15px; font-size:14px; text-align:center;">
       No tienes cuenta? 
       <a id="openRegister" style="color:#fff; text-decoration:underline; cursor:pointer;">Click aquí</a>
@@ -1218,9 +1535,283 @@ const username = document.querySelector("#regName").value;
   </div>
 </div>
 
+<div id="sideMenu" class="side-menu">
+<h2 class="perfil-header">Perfil</h2>
+<p id="userEmail" class="perfil-user-info"></p>
+<p id="user" class="perfil-user-info"></p>
+
+<p class="perfil-section-title">Armas calificadas</p>
+<div class="separator"></div>
+
+<div id="armas-calificadas-container" class="armas-calificadas-section"></div>
+
+<div class="perfil-button-container">
+  <button id="logoutBtn" class="perfil-btn perfil-btn-left">Salir de la cuenta</button>
+  <button id="deleteBtn" class="perfil-btn perfil-btn-right">Eliminar Cuenta</button>
+</div>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+<Script type="module">
+import { getAuth, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+const auth = getAuth();
+
+const logoutBtn = document.getElementById("logoutBtn");
+const deleteBtn = document.getElementById("deleteBtn");
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await signOut(auth); // Cierra sesión en Firebase
+      localStorage.clear(); // Limpia todo lo que guardaste en el navegador
+      alert("Sesión cerrada ✅");
+      location.reload(); // opcional, recarga la página para reflejar cambios
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      alert("Error al cerrar sesión");
+    }
+  });
+}
+
+if (deleteBtn) {
+  deleteBtn.addEventListener("click", async () => {
+    if (!auth.currentUser) return alert("No hay usuario logueado");
+    const user = auth.currentUser;
+    if (!confirm("¿Estás seguro de eliminar tu cuenta? Esto no se puede deshacer.")) return;
+
+    try {
+      await deleteUser(user); // Elimina la cuenta de Firebase
+      localStorage.clear(); // Limpia datos guardados
+      alert("Cuenta eliminada ✅");
+      location.reload(); // recarga para estado inicial
+    } catch (error) {
+      console.error("Error al eliminar cuenta:", error);
+      alert("No se pudo eliminar la cuenta: " + error.message);
+    }
+  });
+}
+
+</Script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCrZU4jrYQdLWICNIa-PsaurM-nQNDVcMk",
+  authDomain: "jsi-creative.firebaseapp.com",
+  projectId: "jsi-creative",
+  storageBucket: "jsi-creative.firebasestorage.app",
+  messagingSenderId: "622524062601",
+  appId: "1:622524062601:web:69d2afeeb6503c2a605f58",
+  measurementId: "G-SMYBMVEJ48"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// Mostrar el total de estrellas de cada modelo
+document.querySelectorAll('.totalStars').forEach(span => {
+  const modelName = span.dataset.model;
+  const estrellasRef = ref(db, `${modelName}/estrellas`);
+  onValue(estrellasRef, snapshot => {
+    const total = snapshot.val() || 0;
+    span.textContent = total;
+  });
+});
+
+function setupModelPanel(panel, uid) {
+  const modelName = panel.dataset.model;
+  const stars = panel.querySelectorAll('.star');
+  const btn = panel.querySelector('button.rate-btn');
+
+  let rating = 0;
+  let yaCalifico = false;
+
+  function updateStars(tempRating = 0) {
+    stars.forEach(s => {
+      if (tempRating > 0) {
+        s.textContent = parseInt(s.dataset.value) <= tempRating ? '★' : '☆';
+        s.style.color = parseInt(s.dataset.value) <= tempRating ? 'red' : '#888';
+      } else {
+        s.textContent = parseInt(s.dataset.value) <= rating ? '★' : '☆';
+        s.style.color = parseInt(s.dataset.value) <= rating ? 'red' : '#888';
+      }
+    });
+  }
+
+  stars.forEach(star => {
+    star.addEventListener('mouseover', () => { if (!yaCalifico) updateStars(parseInt(star.dataset.value)); });
+    star.addEventListener('mouseout', () => { if (!yaCalifico) updateStars(); });
+    star.addEventListener('click', () => { if (!yaCalifico) { rating = parseInt(star.dataset.value); updateStars(); } });
+  });
+
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      if (!yaCalifico) {
+        if (rating === 0) {
+          alert('Selecciona primero la cantidad de estrellas.');
+          return;
+        }
+
+        yaCalifico = true;
+        btn.style.display = 'none';
+        updateStars();
+        stars.forEach(s => { s.style.pointerEvents = 'none'; s.style.cursor = 'default'; });
+
+        // Guardar rating individual
+        const ratingRef = ref(db, `ratings/${uid}/${modelName}`);
+        await set(ratingRef, rating);
+
+        // Actualizar total de estrellas global
+        const estrellasRef = ref(db, `${modelName}/estrellas`);
+        runTransaction(estrellasRef, current => (current || 0) + rating);
+
+        alert('¡Gracias por calificar!');
+      }
+    });
+  }
+
+  // Cargar rating individual del usuario
+  const ratingRef = ref(db, `ratings/${uid}/${modelName}`);
+  onValue(ratingRef, snapshot => {
+    const value = snapshot.val();
+    if (value) {
+      rating = value;
+      yaCalifico = true;
+      updateStars();
+      if (btn) btn.style.display = 'none';
+      stars.forEach(s => { s.style.pointerEvents = 'none'; s.style.cursor = 'default'; });
+    } else {
+      rating = 0;
+      yaCalifico = false;
+      updateStars();
+      if (btn) btn.style.display = 'inline-block';
+      stars.forEach(s => { s.style.pointerEvents = 'auto'; s.style.cursor = 'pointer'; });
+    }
+  });
+}
+
+// Ejecutar cuando el usuario esté logueado
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.querySelectorAll('.model-panel').forEach(panel => setupModelPanel(panel, user.uid));
+  } else {
+    console.log('Usuario no logueado, no se pueden guardar ratings');
+  }
+});
+
+
+function mostrarArmaCalificada(modelName, nombreArma, estrellas) {
+  const container = document.querySelector('#armas-calificadas-container');
+  if (!container) return;
+
+  // Evitar duplicados
+  if (container.querySelector(`[data-model="${modelName}"]`)) return;
+
+  const card = document.createElement('div');
+  card.className = 'arma-calificada-card';
+  card.dataset.model = modelName;
+
+  const panel = document.querySelector(`.model-panel[data-model="${modelName}"]`);
+  const imgSrc = panel ? panel.querySelector('img')?.src || '' : '';
+
+  card.innerHTML = `
+    <img src="${imgSrc}" alt="${nombreArma}" class="arma-calificada-img">
+    <h3 class="arma-calificada-nombre">${nombreArma}</h3>
+    <p class="arma-calificada-rating">Estrellas: ${estrellas}</p>
+  `;
+
+  container.appendChild(card);
+}
+
+
+
+// Espera que todo el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+
+  // Función que muestra un arma calificada como tarjeta
+  function mostrarArmaCalificada(modelName, nombreArma, estrellas) {
+    const container = document.querySelector('#armas-calificadas-container');
+    if (!container) return;
+
+    // Evitar duplicados
+    if (container.querySelector(`[data-model="${modelName}"]`)) return;
+
+    const card = document.createElement('div');
+    card.className = 'card-outer';
+    card.dataset.model = modelName;
+
+    // Obtener imagen desde el panel original si existe
+    const panel = document.querySelector(`.model-panel[data-model="${modelName}"]`);
+    const imgSrc = panel ? panel.querySelector('img')?.src || '' : '';
+
+    card.innerHTML = `
+      <div class="card-inner">
+        <img src="${imgSrc}" alt="${nombreArma}">
+        <div>
+          <h3>${nombreArma}</h3>
+          <p>Estrellas: ${estrellas}</p>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  }
+
+  // Cargar todas las armas calificadas del usuario
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      const ratingsRef = ref(db, `ratings/${user.uid}`);
+      onValue(ratingsRef, snapshot => {
+        const data = snapshot.val() || {};
+        for (const modelName in data) {
+          const rating = data[modelName];
+          const panel = document.querySelector(`.model-panel[data-model="${modelName}"]`);
+          const nombreArma = panel ? panel.querySelector('h3').textContent : modelName;
+          mostrarArmaCalificada(modelName, nombreArma, rating);
+        }
+      });
+    }
+  });
+
+});
+
+
+</script>
+
 
 <script>
-  // Abrir registro
+  const btn = document.querySelector('.lines-btn');
+  const menu = document.getElementById('sideMenu');
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    btn.classList.toggle('active');
+    menu.classList.toggle('open');
+  });
+  document.addEventListener('click', (e) => {
+    if(menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.classList.remove('open');
+      btn.classList.remove('active');
+    }
+  });
+</script>
+<script>
   document.querySelector('.register-btn').addEventListener('click', () => {
     document.getElementById('registerOverlay').style.display = 'flex';
   });
@@ -1228,8 +1819,6 @@ const username = document.querySelector("#regName").value;
   function closeRegister() {
     document.getElementById('registerOverlay').style.display = 'none';
   }
-
-  // Abrir login desde registro
   document.getElementById('openLogin').addEventListener('click', () => {
     closeRegister();
     document.getElementById('loginOverlay').style.display = 'flex';
@@ -1238,8 +1827,6 @@ const username = document.querySelector("#regName").value;
   function closeLogin() {
     document.getElementById('loginOverlay').style.display = 'none';
   }
-
-  // Abrir registro desde login
   document.getElementById('openRegister').addEventListener('click', () => {
     closeLogin();
     document.getElementById('registerOverlay').style.display = 'flex';
@@ -1272,7 +1859,7 @@ function toggleSubDropdown(id) {
   allDropdowns.forEach(d => {
     if(d.id !== id) {
       d.classList.remove('show');
-      setTimeout(() => d.style.display = 'none', 300); // espera la animación
+      setTimeout(() => d.style.display = 'none', 300);
     }
   });
 
@@ -1281,11 +1868,9 @@ function toggleSubDropdown(id) {
     setTimeout(() => dropdown.style.display = 'none', 300);
   } else {
     dropdown.style.display = 'flex';
-    setTimeout(() => dropdown.classList.add('show'), 10); // pequeño retraso para que se aplique la transición
+    setTimeout(() => dropdown.classList.add('show'), 10);
   }
 }
-
-
 function selectItem(type, value){
   document.getElementById(type + 'Text').textContent = value;
   const dropdown = type === 'tipo' ? document.getElementById('tipoItems') :
@@ -1300,16 +1885,12 @@ function selectItem(type, value){
 window.addEventListener('click', function(e){
   const contactDropdown = document.getElementById("myDropdown");
   const subDropdowns = document.querySelectorAll('.dropdown-items');
-
-  // Cerrar dropdowns de tercera barra
   if(!e.target.closest('.sub-dropdown')) {
     subDropdowns.forEach(d => {
       d.classList.remove('show');
       setTimeout(() => d.style.display = 'none', 300);
     });
   }
-
-  // Cerrar dropdown de contacto
   if(!e.target.closest('.dropdown-btn') && !e.target.closest('#myDropdown')){
     contactDropdown.classList.remove('show');
     setTimeout(() => contactDropdown.style.display = 'none', 300);
@@ -1351,8 +1932,6 @@ document.querySelectorAll('.card-outer').forEach(outer => {
     }
   });
 });
-
-// --- Cerrar panel con el botón "Volver" ---
 document.querySelectorAll('.model-panel .close-panel').forEach(btn => {
   btn.addEventListener('click', () => {
     const panel = btn.closest('.model-panel');
@@ -1386,10 +1965,8 @@ document.getElementById('searchBtn').addEventListener('click', function() {
     const name = card.querySelector('h3').textContent.toLowerCase();
     
     if(query === "") {
-      // Si el buscador está vacío, mostramos todos los modelos
       card.style.display = 'block';
     } else {
-      // Si hay texto, mostramos solo los que coincidan
       card.style.display = name.includes(query) ? 'block' : 'none';
     }
   });
@@ -1408,31 +1985,21 @@ document.getElementById('searchBtn').addEventListener('click', function() {
     const panelTags = panel.querySelectorAll('.tag');
     let tags = [];
     panelTags.forEach(t => tags.push(t.textContent));
-
-    // Filtrar tarjetas que compartan al menos un tag
     let filteredCards = allCards.filter(card => {
       const cardTags = card.dataset.tags.split(',');
       return tags.some(tag => cardTags.includes(tag)) && card.dataset.model !== model;
     });
-
-    // Mezclar aleatoriamente
     filteredCards.sort(() => Math.random() - 0.5);
-
-    // Agregar las tarjetas filtradas inicialmente
     filteredCards.slice(0, 5).forEach(card => {
       const recCard = createRecCard(card);
       recommendedContainer.appendChild(recCard);
     });
-
-    // Si hay menos de 5, rellenar con repetidos aleatorios
     while(recommendedContainer.children.length < 5 && filteredCards.length > 0){
       const randomCard = filteredCards[Math.floor(Math.random() * filteredCards.length)];
       const recCard = createRecCard(randomCard);
       recommendedContainer.appendChild(recCard);
     }
   });
-
-  // Función auxiliar para crear la tarjeta recomendada
   function createRecCard(card){
     const recCard = document.createElement('div');
     recCard.className = "recommended-card";
@@ -1476,12 +2043,9 @@ document.getElementById('searchBtn').addEventListener('click', function() {
     });
 
 recCard.addEventListener('click', () => {
-  // Cerrar todos los paneles abiertos
   document.querySelectorAll('.model-panel').forEach(p => {
     p.style.display = "none";
   });
-
-  // Abrir el panel correspondiente
   const targetPanel = document.querySelector(`.model-panel[data-model="${card.dataset.model}"]`);
   if(targetPanel) targetPanel.style.display = "block";
 });
@@ -1492,46 +2056,9 @@ recCard.addEventListener('click', () => {
 })();
 </script>
 
-<script>
-// Script para calificación de estrellas con hover
-document.querySelectorAll('.model-panel').forEach(panel => {
-  const stars = panel.querySelectorAll('.star');
-  let rating = 0;
 
-  function updateStars(tempRating = 0) {
-    stars.forEach(s => {
-      if (tempRating > 0) {
-        // hover temporal
-        s.textContent = parseInt(s.dataset.value) <= tempRating ? '★' : '☆';
-        s.style.color = parseInt(s.dataset.value) <= tempRating ? 'red' : '#888';
-      } else {
-        // valor real
-        s.textContent = parseInt(s.dataset.value) <= rating ? '★' : '☆';
-        s.style.color = parseInt(s.dataset.value) <= rating ? 'red' : '#888';
-      }
-    });
-  }
-
-  stars.forEach(star => {
-    star.addEventListener('mouseover', () => {
-      const tempRating = parseInt(star.dataset.value);
-      updateStars(tempRating);
-    });
-
-    star.addEventListener('mouseout', () => {
-      updateStars();
-    });
-
-    star.addEventListener('click', () => {
-      rating = parseInt(star.dataset.value);
-      updateStars();
-    });
-  });
-});
-</script>
 
 <script>
-// --- Abrir panel correspondiente al hacer click en cualquier tarjeta ---
 document.querySelectorAll('.card-outer').forEach(card => {
   card.addEventListener('click', () => {
     const model = card.dataset.model;
@@ -1542,8 +2069,6 @@ document.querySelectorAll('.card-outer').forEach(card => {
     }
   });
 });
-
-// --- Cerrar panel con el botón "Volver" ---
 document.querySelectorAll('.model-panel .close-panel').forEach(btn => {
   btn.addEventListener('click', () => {
     const panel = btn.closest('.model-panel');
@@ -1553,7 +2078,6 @@ document.querySelectorAll('.model-panel .close-panel').forEach(btn => {
 </script>
 
 <Script>
-// Script para carrusel
 const mauserContainer = document.querySelectorAll('.gallery-container');
 
 mauserContainer.forEach(container => {
@@ -1562,7 +2086,7 @@ mauserContainer.forEach(container => {
   let currentIndex = 0;
 
   const updateSlide = () => {
-    const offset = -currentIndex * (images[0].clientWidth + 15); // gap
+    const offset = -currentIndex * (images[0].clientWidth + 15);
     slide.style.transform = `translateX(${offset}px)`;
   };
 
@@ -1585,7 +2109,6 @@ mauserContainer.forEach(container => {
 });
 
 document.getElementById('visitas').textContent = nuevoNumero;
-
 </Script>
 </body>
 </html>
